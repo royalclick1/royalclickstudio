@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Click Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;scroll-behavior:smooth;}
+body{background:#0a0a0a;color:#fff;}
+nav{position:fixed;width:100%;top:0;background:rgba(0,0,0,0.7);padding:15px;display:flex;justify-content:space-between;z-index:1000;}
+nav h2{color:#ffcc00;}
+nav a{color:#fff;margin:0 10px;text-decoration:none;}
+header{height:100vh;background:url('https://images.unsplash.com/photo-1519741497674-611481863552') center/cover no-repeat;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+header h1{font-size:60px;}
+header p{margin:15px 0;font-size:20px;color:#ddd;}
+header button{padding:14px 30px;border:none;background:#ffcc00;color:#000;border-radius:30px;cursor:pointer;font-weight:bold;}
+section{padding:80px 20px;text-align:center;}
+h2{margin-bottom:30px;font-size:32px;}
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+.card{background:#141414;padding:25px;border-radius:20px;transition:0.4s;}
+.card:hover{transform:translateY(-10px);box-shadow:0 20px 40px rgba(255,204,0,0.2);} 
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;}
+.gallery img{width:100%;border-radius:15px;transition:0.5s;}
+.gallery img:hover{transform:scale(1.1);} 
+form{max-width:450px;margin:auto;background:#141414;padding:20px;border-radius:15px;}
+input,select{width:100%;padding:12px;margin:10px 0;border:none;border-radius:8px;background:#222;color:#fff;}
+button.submit{width:100%;padding:14px;background:#ffcc00;border:none;border-radius:8px;font-weight:bold;cursor:pointer;}
+footer{background:#000;padding:25px;text-align:center;font-size:14px;color:#aaa;}
+</style>
+</head>
+<body>
+
+<nav>
+<h2>Royal Click</h2>
+<div>
+<a href="#">Home</a>
+<a href="#services">Services</a>
+<a href="#gallery">Work</a>
+<a href="#pricing">Pricing</a>
+<a href="#booking">Book</a>
+</div>
+</nav>
+
+<header>
+<h1 data-aos="fade-up">Royal Click Studio</h1>
+<p data-aos="fade-up">Premium Wedding & Cinematic Photography</p>
+<button onclick="document.getElementById('booking').scrollIntoView()">Book Now</button>
+</header>
+
+<section id="services">
+<h2 data-aos="fade-up">Services</h2>
+<div class="services">
+<div class="card">Wedding</div>
+<div class="card">Pre-Wedding</div>
+<div class="card">Album</div>
+<div class="card">Photo Paint</div>
+</div>
+</section>
+
+<section id="pricing">
+<h2>Pricing</h2>
+<div class="services">
+<div class="card">Wedding ₹25,000+</div>
+<div class="card">Pre-Wedding ₹15,000+</div>
+<div class="card">Album ₹12,000+</div>
+<div class="card">Photo Paint ₹500</div>
+</div>
+</section>
+
+<section id="booking">
+<h2>Booking + Billing</h2>
+<form onsubmit="handleBooking(event)">
+<input type="text" id="name" placeholder="Client Name" required>
+<input type="tel" id="phone" placeholder="Phone" required>
+<input type="date" id="date" required>
+<input type="number" id="total" placeholder="Total Amount">
+<input type="number" id="advance" placeholder="Advance">
+<input type="number" id="event" placeholder="Event Payment">
+<input type="number" id="final" placeholder="Final Payment">
+<button class="submit">Confirm Booking</button>
+</form>
+<p id="msg"></p>
+</section>
+
+<footer>
+<p>📞 9876543210 | Royal Click Studio</p>
+</footer>
+
+<script>
+AOS.init();
+
+function handleBooking(e){
+ e.preventDefault();
+ let name=document.getElementById('name').value;
+ let phone=document.getElementById('phone').value;
+ let total=+document.getElementById('total').value||0;
+ let adv=+document.getElementById('advance').value||0;
+ let ev=+document.getElementById('event').value||0;
+ let fin=+document.getElementById('final').value||0;
+ let paid=adv+ev+fin;
+ let rem=total-paid;
+
+ document.getElementById('msg').innerText=`Paid ₹${paid} | Remaining ₹${rem}`;
+
+ // Save to local database
+ let data={name,phone,total,paid,rem};
+ let all=JSON.parse(localStorage.getItem('clients')||'[]');
+ all.push(data);
+ localStorage.setItem('clients',JSON.stringify(all));
+
+ // WhatsApp Auto Message
+ let msg=`Hello ${name}, Booking Confirmed. Paid ₹${paid}, Remaining ₹${rem}`;
+ window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
+
+ // PDF Invoice
+ const { jsPDF } = window.jspdf;
+ let doc=new jsPDF();
+ doc.text(`Client: ${name}`,10,10);
+ doc.text(`Total: ₹${total}`,10,20);
+ doc.text(`Paid: ₹${paid}`,10,30);
+ doc.text(`Remaining: ₹${rem}`,10,40);
+ doc.save(`${name}_invoice.pdf`);
+}
+</script>
+
+</body>
+</html>
